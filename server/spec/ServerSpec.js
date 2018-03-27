@@ -19,8 +19,12 @@ describe('Node Server Request Listener Function', function() {
 
     handler.requestHandler(req, res);
 
+    console.log('res._responseCode', res._responseCode);
+    console.log('res._ended', res._ended);
+
     expect(res._responseCode).to.equal(200);
     expect(res._ended).to.equal(true);
+    done();
   });
 
   it('Should send back parsable stringified JSON', function() {

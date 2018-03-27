@@ -1,4 +1,5 @@
 /*************************************************************
+// http://parse.CAMPUS.hackreactor.com/chatterbox/classes/messages
 
 You should implement your request handler function in this file.
 
@@ -11,8 +12,23 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
+var messages = {}; 
+messages.results = [{
+  username: 'johnny',
+  text: 'this is a message',
+  roomname: 'lobby',
+  objectId: 42
+}];
 
-var requestHandler = function(request, response) {
+exports.requestHandler = function(request, response) {
+  
+  // if get then return all the messages
+  // how do we handle a get request?
+    // handle the header
+    // handle the body
+      // data: { order: '-createdAt' },
+    // return messages
+  
   // Request and Response come from node's http module.
   //
   // They include information about both the incoming request, such as
@@ -21,7 +37,7 @@ var requestHandler = function(request, response) {
   //
   // Documentation for both request and response can be found in the HTTP section at
   // http://nodejs.org/documentation/api/
-
+  // console.log(request.trailers);
   // Do some basic logging.
   //
   // Adding more logging to your server can be an easy way to get passive
@@ -29,8 +45,12 @@ var requestHandler = function(request, response) {
   // console.logs in your code.
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
 
+  var validEndpoint = "/classes/messages";
+  
   // The outgoing status.
   var statusCode = 200;
+  // maybe handle bad requests? send back 400 errors
+
 
   // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
@@ -39,12 +59,10 @@ var requestHandler = function(request, response) {
   //
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
-  headers['Content-Type'] = 'text/plain';
+  headers['Content-Type'] = 'application/json';
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
-  response.writeHead(statusCode, headers);
-
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
   // response.end() will be the body of the response - i.e. what shows
@@ -52,7 +70,28 @@ var requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end('Hello, World!');
+  if (request.url.substring(0,18) !== validEndpoint) {
+    var statusCode = 404;
+    response.writeHead(statusCode, headers);
+    response.end();
+  } else if (request.method === 'GET' || request.method === 'OPTIONS') {
+    response.writeHead(statusCode, headers);
+    response.end(JSON.stringify(messages));
+  } else if (request.method === 'POST') {
+    let body = [];
+    request.on('data', chunk => {
+      body.push(chunk);
+    }).on('end', () => {
+      body = Buffer.concat(body).toString();
+      body = JSON.parse(body);
+      body.objectId = messages.results[messages.results.length - 1]['objectId'] + 1;
+      messages.results.push(body);
+    });
+      statusCode = 201;
+      response.writeHead(statusCode, headers);
+      response.end(JSON.stringify(messages));
+  }
+  
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
