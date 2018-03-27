@@ -19,12 +19,8 @@ describe('Node Server Request Listener Function', function() {
 
     handler.requestHandler(req, res);
 
-    console.log('res._responseCode', res._responseCode);
-    console.log('res._ended', res._ended);
-
     expect(res._responseCode).to.equal(200);
     expect(res._ended).to.equal(true);
-    done();
   });
 
   it('Should send back parsable stringified JSON', function() {
@@ -98,6 +94,7 @@ describe('Node Server Request Listener Function', function() {
     handler.requestHandler(req, res);
 
     expect(res._responseCode).to.equal(200);
+    console.log('looking for res_data', res._data);
     var messages = JSON.parse(res._data).results;
     expect(messages.length).to.be.above(0);
     expect(messages[0].username).to.equal('Jono');

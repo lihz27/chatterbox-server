@@ -13,12 +13,7 @@ this file and include it in basic-server.js so that it actually works.
 
 **************************************************************/
 var messages = {}; 
-messages.results = [{
-  username: 'johnny',
-  text: 'this is a message',
-  roomname: 'lobby',
-  objectId: 42
-}];
+messages.results = [];
 
 exports.requestHandler = function(request, response) {
   
@@ -44,7 +39,7 @@ exports.requestHandler = function(request, response) {
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
-
+  console.log(request.url.substring(0,18));
   var validEndpoint = "/classes/messages";
   
   // The outgoing status.
@@ -70,7 +65,7 @@ exports.requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  if (request.url.substring(0,18) !== validEndpoint) {
+  if (request.url.substring(0,17) !== validEndpoint) {
     var statusCode = 404;
     response.writeHead(statusCode, headers);
     response.end();
@@ -84,7 +79,13 @@ exports.requestHandler = function(request, response) {
     }).on('end', () => {
       body = Buffer.concat(body).toString();
       body = JSON.parse(body);
-      body.objectId = messages.results[messages.results.length - 1]['objectId'] + 1;
+      if (messages.results.length) {
+        body.objectId = messages.results[messages.results.length - 1]['objectId'] + 1;
+      } else {
+        if (!body.objectId) {
+          body.objectId = 1;
+        }
+      }
       messages.results.push(body);
     });
       statusCode = 201;
